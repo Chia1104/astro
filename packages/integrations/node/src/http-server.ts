@@ -21,6 +21,11 @@ function parsePathname(pathname: string, host: string | undefined, port: number)
 	}
 }
 
+// check SERVER_KEY_PATH and SERVER_CERT_PATH to determine if we should use https
+export function checkHttps() {
+	return process.env.SERVER_CERT_PATH && process.env.SERVER_KEY_PATH;
+}
+
 export function createServer(
 	{ client, port, host, removeBase }: CreateServerOptions,
 	handler: http.RequestListener
@@ -81,11 +86,12 @@ export function createServer(
 		| http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
 		| https.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
 
-	if (process.env.SERVER_CERT_PATH && process.env.SERVER_KEY_PATH) {
+	// check SERVER_KEY_PATH and SERVER_CERT_PATH to determine if we should use https
+	if (checkHttps()) {
 		httpServer = https.createServer(
 			{
-				key: fs.readFileSync(process.env.SERVER_KEY_PATH),
-				cert: fs.readFileSync(process.env.SERVER_CERT_PATH),
+				key: fs.readFileSync(process.env.SERVER_KEY_PATH!),
+				cert: fs.readFileSync(process.env.SERVER_CERT_PATH!),
 			},
 			listener
 		);

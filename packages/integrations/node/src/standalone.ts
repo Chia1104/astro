@@ -3,7 +3,7 @@ import https from 'https';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getNetworkAddress } from './get-network-address.js';
-import { createServer } from './http-server.js';
+import { createServer, checkHttps } from './http-server.js';
 import middleware from './nodeMiddleware.js';
 import type { Options } from './types.js';
 
@@ -56,7 +56,8 @@ export default function startServer(app: NodeApp, options: Options) {
 		handler
 	);
 
-	const protocol = server.server instanceof https.Server ? 'https' : 'http';
+	// check SERVER_KEY_PATH and SERVER_CERT_PATH to determine if we should use https
+	const protocol = checkHttps() ? 'https' : 'http';
 	const address = getNetworkAddress(protocol, host, port);
 
 	if (host === undefined) {
